@@ -1,7 +1,7 @@
 # Keyboard
 
 ## Firmware
-The firmware is a modified version of ![alt text](https://github.com/malcx95/ZeKeyboard). Modified to fit a more simple 60% keyboard without backlighting. 
+The firmware is a modified version of [ZeKeyboard](https://github.com/malcx95/ZeKeyboard). Modified to fit a more simple 60% keyboard without backlighting. 
 
 ## Layout
 Nordic ISO layout

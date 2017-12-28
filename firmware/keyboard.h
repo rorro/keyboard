@@ -23,6 +23,7 @@ namespace Ze {
     // Again, this keycode is not sent, but used
     // to control behavior of other keys
     const int KEY_FN = -7;
+    const int KEY_FN2 = -8;
 
     const uint8_t NUM_MODIFIERS = 6;
 
@@ -46,6 +47,11 @@ namespace Ze {
         Key(int main, int second);
 
         /*
+         * Initializes key with main, second and third function
+         */
+         Key(int main, int second, int third);
+
+        /*
          * Checks whether this key is a modifier key.
          */
         bool is_modifier() const;
@@ -66,9 +72,19 @@ namespace Ze {
         bool is_fn() const;
 
         /*
+         * Checks if key pressed is the second FN key
+         */
+        bool is_fn2() const;
+
+        /*
          * Checks whether this key has a second function.
          */
         bool has_second() const;
+
+        /*
+         * Checks if key has a third function.
+         */
+        bool has_third() const;
 
         bool operator==(const Key& other) const;
 
@@ -86,6 +102,12 @@ namespace Ze {
          * function, this is set as KEY_DUMMY.
          */
         int second;
+
+        /*
+         * Third function of this key. Will be sent when 
+         * the FN-2 is pressed.
+         */
+        int third;
     
     };
 
@@ -131,6 +153,7 @@ namespace Ze {
             };
 
             bool fn_pressed;
+            bool fn2_pressed;
 
             uint8_t num_keys_pressed;
 
@@ -226,8 +249,8 @@ namespace Ze {
         
         {
             Key(KEY_BACKSPACE),
-            Key(KEY_EQUAL),
-            Key(KEY_MINUS),
+            Key(KEY_EQUAL, KEY_F12),
+            Key(KEY_MINUS, KEY_F11),
             Key(KEY_0, KEY_F10), 
             Key(KEY_9, KEY_F9),
             Key(KEY_8, KEY_F8),
@@ -256,9 +279,9 @@ namespace Ze {
             Key(KEY_Y),
             Key(KEY_T), 
             Key(KEY_R),
-            Key(KEY_E), 
-            Key(KEY_W),
-            Key(KEY_Q), 
+            Key(KEY_E, KEY_DUMMY, KEYPAD_9), 
+            Key(KEY_W, KEY_DUMMY, KEYPAD_8),
+            Key(KEY_Q, KEY_DUMMY, KEYPAD_7), 
             Key(KEY_TAB)
         },
 
@@ -277,9 +300,9 @@ namespace Ze {
             Key(KEY_H),
             Key(KEY_G), 
             Key(KEY_F), 
-            Key(KEY_D), 
-            Key(KEY_S),
-            Key(KEY_A),
+            Key(KEY_D, KEY_DUMMY, KEYPAD_6), 
+            Key(KEY_S, KEY_DUMMY, KEYPAD_5),
+            Key(KEY_A, KEY_DUMMY, KEYPAD_4),
             Key(KEY_CAPS_LOCK)
         },
 
@@ -297,10 +320,10 @@ namespace Ze {
             Key(KEY_N),
             Key(KEY_B),
             Key(KEY_V),
-            Key(KEY_C),
-            Key(KEY_X),
-            Key(KEY_Z),
-            Key(KEY_NON_US_BS),
+            Key(KEY_C, KEY_DUMMY, KEYPAD_3),
+            Key(KEY_X, KEY_DUMMY, KEYPAD_2),
+            Key(KEY_Z, KEY_DUMMY, KEYPAD_1),
+            Key(KEY_NON_US_BS, KEY_DUMMY, KEYPAD_0),
             Key(KEY_LSHIFT)
         },
 
@@ -311,7 +334,7 @@ namespace Ze {
         {
             Key(KEY_CTRL),
             Key(KEY_FN),
-            Key(KEY_SUPER),
+            Key(KEY_FN2),
             Key(KEY_ALTGR),
             Key(), // dummy
             Key(), // dummy

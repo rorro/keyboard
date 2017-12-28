@@ -8,11 +8,19 @@ Ze::Key::Key() {
 Ze::Key::Key(int code) {
     this->code = code;
     this->second = KEY_DUMMY;
+    this->third = KEY_DUMMY;
 }
 
 Ze::Key::Key(int code, int second) {
     this->code = code;
     this->second = second;
+    this->third = KEY_DUMMY;
+}
+
+Ze::Key::Key(int code, int second, int third) {
+    this->code = code;
+    this->second = second;
+    this->third = third;
 }
 
 bool Ze::Key::is_modifier() const {
@@ -39,8 +47,16 @@ bool Ze::Key::is_fn() const {
     return code == KEY_FN;
 }
 
+bool Ze::Key::is_fn2() const {
+    return code == KEY_FN2;
+}
+
 bool Ze::Key::has_second() const {
     return second != KEY_DUMMY;
+}
+
+bool Ze::Key::has_third() const {
+    return third != KEY_DUMMY;
 }
 
 int Ze::Board::translate_modifier(const int modifier) const {
@@ -64,6 +80,7 @@ void Ze::Board::init() {
     }
 
     fn_pressed = false;
+    fn2_pressed = false;
     num_keys_pressed = 0;
     tot_num_keys_pressed = 0;
     current_media = 0;
@@ -118,6 +135,7 @@ void Ze::Board::update() {
     current_modifier = 0;
     pressed_media = Key();
     fn_pressed = false;
+    fn2_pressed = false;
 
     scan_keys();
 
@@ -147,6 +165,10 @@ void Ze::Board::scan_keys() {
 
                         this->fn_pressed = true;
 
+                    } else if(pressed.is_fn2()) {
+
+                        this->fn2_pressed = true;
+                    
                     } else if (pressed.is_modifier()) {
 
                         current_modifier |= translate_modifier(pressed.code);
@@ -242,6 +264,8 @@ bool Ze::Board::try_place_key(Key& k) {
 
     if (k.has_second() && fn_pressed) {
         code = k.second;
+    } else if (k.has_third() && fn2_pressed) {
+        code = k.third;
     } else {
         code = k.code;
     }

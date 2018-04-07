@@ -10,7 +10,7 @@ uint8_t count;
 void smart_delay(unsigned long start_time);
 
 void setup() {
-
+    
     delay(50);
     
     keyboard.init();

@@ -27,10 +27,6 @@ bool Ze::Key::is_modifier() const {
     return this->code < 0;
 }
 
-bool Ze::Key::is_media() const {
-    return (0xFF00 & this->code) == 0xE400;
-}
-
 bool Ze::Key::is_dummy() const {
     return code == KEY_DUMMY;
 }
@@ -64,7 +60,6 @@ int Ze::Board::translate_modifier(const int modifier) const {
     return MODIFIER_MAP[-1 * modifier - 1];
 }
 
-
 void Ze::Board::init() {
 
     // Set the rows as outputs
@@ -81,9 +76,10 @@ void Ze::Board::init() {
 
     fn_pressed = false;
     fn2_pressed = false;
+    current_state = KeyboardState::NORMAL;
+    recently_state_changed = false;
     num_keys_pressed = 0;
     tot_num_keys_pressed = 0;
-    current_media = 0;
 
     // Initialize the key buffers to nullptrs
     for (uint8_t i = 0; i < MAX_NUM_KEYS; ++i) {
@@ -133,7 +129,6 @@ void Ze::Board::update() {
     num_keys_released = 0;
     tot_num_keys_pressed = 0;
     current_modifier = 0;
-    pressed_media = Key();
     fn_pressed = false;
     fn2_pressed = false;
 
@@ -145,6 +140,12 @@ void Ze::Board::update() {
 }
 
 void Ze::Board::scan_keys() {
+    if (current_state == KeyboardState::SPECIAL) {
+      keymap = KEYS_SPECIAL;
+    } else {
+      keymap = KEYS;
+    }
+    
     for (uint8_t row = 0; row < NUM_ROWS; ++row) {
 
         // set this row to low
@@ -152,12 +153,12 @@ void Ze::Board::scan_keys() {
         delayMicroseconds(READ_DELAY);
 
         for (uint8_t col = 0; col < NUM_COLS; ++col) {
-            if (!KEYS[row][col].is_dummy()) {
+            if (!keymap[row][col].is_dummy()) {
 
                 if (digitalRead(COL_PINS[col]) == LOW) {
                     // non dummy key is pressed
 
-                  Key pressed = KEYS[row][col];
+                  Key pressed = keymap[row][col];
                     all_pressed_keys[tot_num_keys_pressed] = pressed;
                     tot_num_keys_pressed++;
 
@@ -173,10 +174,6 @@ void Ze::Board::scan_keys() {
 
                         current_modifier |= translate_modifier(pressed.code);
 
-                    } else if (pressed.is_media()) {
-
-                        pressed_media = pressed;
-
                     } else {
 
                         // if there is room for keys to send
@@ -185,10 +182,39 @@ void Ze::Board::scan_keys() {
                         }
                         num_keys_pressed++;
                     }
+
+                    // Change mode
+                    if (fn_pressed && fn2_pressed && !recently_state_changed) {
+                        if (current_state == KeyboardState::NORMAL) {
+                            current_state = KeyboardState::SPECIAL;
+                            recently_state_changed = true;
+                            
+                        } else {
+                            current_state = KeyboardState::NORMAL;
+                            recently_state_changed = true;
+                        }
+                    }
                 }
             }
         }
         digitalWrite(ROW_PINS[row], HIGH);
+    }
+}
+
+void Ze::Board::set_recently_state_change() {
+        Key fn = Ze::Key(KEY_FN);
+        Key fn2 = Ze::Key(KEY_FN2);
+        bool found = false;
+        
+    for (uint8_t i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        if (fn == all_pressed_keys[i] || fn2 == all_pressed_keys[i]) {
+          found = true;
+          
+        }
+    }
+
+    if (!found) {
+        recently_state_changed = false;
     }
 }
 
@@ -222,21 +248,12 @@ void Ze::Board::remove_released_keys() {
 
 void Ze::Board::update_keys_to_send() {
     remove_released_keys();
+    set_recently_state_change();
     for (uint8_t i = 0; i < MAX_NUM_KEYS; ++i) {
         Key k = curr_pressed_keys[i];
         if (!k.is_dummy()) {
             try_place_key(k);
         }
-    }
-
-    if (!pressed_media.is_dummy()) {
-        if (pressed_media.has_second() && fn_pressed) {
-            current_media = pressed_media.second;
-        } else {
-            current_media = pressed_media.code;
-        }
-    } else {
-        current_media = 0;
     }
 }
 
@@ -288,8 +305,6 @@ void Ze::Board::send_keys() {
     Keyboard.set_key6(codes_to_send[5]);
 
     Keyboard.set_modifier(current_modifier);
-
-    Keyboard.set_media(current_media);
 
     Keyboard.send_now();
 }

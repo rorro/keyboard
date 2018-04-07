@@ -57,11 +57,6 @@ namespace Ze {
         bool is_modifier() const;
 
         /*
-         * Checks whether this key is a media key.
-         */
-        bool is_media() const;
-
-        /*
          * Checks whether this key is a dummy key.
          */
         bool is_dummy() const;
@@ -131,8 +126,6 @@ namespace Ze {
 
             uint8_t get_num_released_keys();
 
-            bool brightness_inc_pressed();
-
         private:
 
             const int MODIFIER_MAP[NUM_MODIFIERS] = {
@@ -154,6 +147,8 @@ namespace Ze {
 
             bool fn_pressed;
             bool fn2_pressed;
+            KeyboardState current_state;
+            bool recently_state_changed;
 
             uint8_t num_keys_pressed;
 
@@ -189,15 +184,16 @@ namespace Ze {
             Key keys_to_send[MAX_NUM_KEYS];
 
             /*
-             * The actual keycodes to be sent;
+             * The actual keycodes to be sent.
              */
             int codes_to_send[MAX_NUM_KEYS];
 
             int current_modifier;
 
-            Key pressed_media;
-
-            int current_media;
+            /*
+             * Some pointer magic to make changing modes work.
+             */
+            const Key (*keymap)[14];
 
             /*
              * Gets the real modifier code for a modifier key.
@@ -212,6 +208,12 @@ namespace Ze {
              * longer being pressed.
              */
             void remove_released_keys();
+
+            /*
+             * Sets the recently_state_changed to false
+             * if the fn keys are released.
+             */
+            void set_recently_state_change();
 
             /*
              * Clears curr_pressed_keys.
@@ -349,6 +351,114 @@ namespace Ze {
         }
     };
 
+    
+     const Key KEYS_SPECIAL[NUM_ROWS][NUM_COLS] = {
+
+        //******************************************
+        // ROW 0
+        //******************************************
+        
+        {
+            Key(KEY_BACKSPACE),
+            Key(KEY_F12, KEY_EQUAL),
+            Key( KEY_F11, KEY_MINUS),
+            Key(KEY_F10, KEY_0), 
+            Key( KEY_F9, KEY_9),
+            Key(KEY_F8, KEY_8),
+            Key(KEY_F7, KEY_7),
+            Key(KEY_F6, KEY_6), 
+            Key(KEY_F5, KEY_5),
+            Key(KEY_F4, KEY_4), 
+            Key(KEY_F3, KEY_3),
+            Key(KEY_F2, KEY_2),
+            Key(KEY_F1, KEY_1),
+            Key(KEY_ESC, KEY_TILDE)
+        },
+
+        //******************************************
+        // ROW 1
+        //******************************************
+
+        {
+            Key(),
+            Key(KEY_RIGHT_BRACE),
+            Key(KEY_LEFT_BRACE),
+            Key(KEY_P),
+            Key(KEY_O), 
+            Key(KEY_I),
+            Key(KEY_U), 
+            Key(KEY_Y),
+            Key(KEY_T), 
+            Key(KEY_R),
+            Key(KEY_E, KEY_DUMMY, KEYPAD_9), 
+            Key(KEY_W, KEY_DUMMY, KEYPAD_8),
+            Key(KEY_Q, KEY_DUMMY, KEYPAD_7), 
+            Key(KEY_TAB)
+        },
+
+        //******************************************
+        // ROW 2
+        //******************************************
+        
+        {
+            Key(KEY_ENTER),
+            Key(KEY_BACKSLASH),
+            Key(KEY_QUOTE),
+            Key(KEY_SEMICOLON),
+            Key(KEY_L, KEY_UP),
+            Key(KEY_K),
+            Key(KEY_J),
+            Key(KEY_H),
+            Key(KEY_G), 
+            Key(KEY_F), 
+            Key(KEY_D, KEY_DUMMY, KEYPAD_6), 
+            Key(KEY_S, KEY_DUMMY, KEYPAD_5),
+            Key(KEY_A, KEY_DUMMY, KEYPAD_4),
+            Key(KEY_CAPS_LOCK)
+        },
+
+        //******************************************
+        // ROW 3
+        //******************************************
+        
+        {
+            Key(KEY_RSHIFT),
+            Key(), // dummy
+            Key(KEY_SLASH, KEY_RIGHT),
+            Key(KEY_PERIOD, KEY_DOWN),
+            Key(KEY_COMMA, KEY_LEFT),
+            Key(KEY_M),
+            Key(KEY_N),
+            Key(KEY_B),
+            Key(KEY_V),
+            Key(KEY_C, KEY_DUMMY, KEYPAD_3),
+            Key(KEY_X, KEY_DUMMY, KEYPAD_2),
+            Key(KEY_Z, KEY_DUMMY, KEYPAD_1),
+            Key(KEY_NON_US_BS, KEY_DUMMY, KEYPAD_0),
+            Key(KEY_LSHIFT)
+        },
+
+        //******************************************
+        // ROW 4
+        //******************************************
+        
+        {
+            Key(KEY_CTRL),
+            Key(KEY_FN),
+            Key(KEY_FN2),
+            Key(KEY_ALTGR),
+            Key(), // dummy
+            Key(), // dummy
+            Key(), // dummy
+            Key(KEY_SPACE),
+            Key(), // dummy
+            Key(), // dummy
+            Key(), // dummy
+            Key(KEY_ALT),
+            Key(KEY_SUPER),
+            Key(KEY_CTRL)
+        }
+    };
 };
 
 #endif
